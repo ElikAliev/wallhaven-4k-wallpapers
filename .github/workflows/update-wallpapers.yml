@@ -1,0 +1,39 @@
+
+name: Update 4K Wallpapers
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-wallpapers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Generate wallpaper feed
+        run: python generate_feed.py
+
+      - name: Commit updated wallpapers
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wallpapers.json seen_ids.json
+          git diff --cached --quiet || git commit -m "Update 4K wallpaper feed"
+          git push
